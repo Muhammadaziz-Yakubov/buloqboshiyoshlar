@@ -1,0 +1,389 @@
+const express = require('express');
+const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const Application = require('../models/Application');
+const Event = require('../models/Event');
+const { authenticate, adminOnly, ownerOnly } = require('../middleware/auth');
+
+// File upload konfiguratsiyasi
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = 'uploads/applications/';
+    // Agar papka bo'lmasa, yaratish
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'app-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB
+  },
+  fileFilter: function (req, file, cb) {
+    // Hujjat fayllariga ruxsat berish
+    const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Faqat rasm va hujjat fayllari yuklanishi mumkin'));
+    }
+  }
+});
+
+// Barcha arizalarni olish (admin only)
+router.get('/', authenticate, adminOnly, async (req, res) => {
+  try {
+    const { page = 1, limit = 10, status, eventId } = req.query;
+    
+    let filter = {};
+    if (status) filter.status = status;
+    if (eventId) filter.eventId = eventId;
+
+    const applications = await Application.find(filter)
+      .populate('eventId', 'title date')
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+
+    const total = await Application.countDocuments(filter);
+
+    // Statistikani hisoblash
+    const stats = {
+      total: await Application.countDocuments(),
+      pending: await Application.countDocuments({ status: 'pending' }),
+      reviewing: await Application.countDocuments({ status: 'reviewing' }),
+      accepted: await Application.countDocuments({ status: 'accepted' }),
+      rejected: await Application.countDocuments({ status: 'rejected' })
+    };
+
+    res.json({
+      message: 'Arizalar muvaffaqiyatli olindi',
+      applications,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+      total,
+      stats
+    });
+
+  } catch (error) {
+    console.error('Get applications xatosi:', error);
+    res.status(500).json({ message: 'Server xatosi' });
+  }
+});
+
+// Bitta arizani olish (admin only yoki o'z arizasi)
+router.get('/:id', authenticate, async (req, res) => {
+  try {
+    const application = await Application.findById(req.params.id)
+      .populate('eventId', 'title date location');
+
+    if (!application) {
+      return res.status(404).json({ 
+        message: 'Ariza topilmadi' 
+      });
+    }
+
+    // Faqat adminlar yoki ariza egasi ko'rishi mumkin
+    if (req.user.role !== 'admin' && req.user.role !== 'owner') {
+      // Oddiy user o'z arizasini ko'ra oladi (agar kerak bo'lsa)
+      // Bu yerda qo'shimcha tekshirish qo'shish mumkin
+      return res.status(403).json({ 
+        message: 'Sizda bu arizani ko\'rish uchun ruxsat yo\'q' 
+      });
+    }
+
+    res.json({
+      message: 'Ariza muvaffaqiyatli olindi',
+      application
+    });
+
+  } catch (error) {
+    console.error('Get application xatosi:', error);
+    res.status(500).json({ message: 'Server xatosi' });
+  }
+});
+
+// Yangi ariza yaratish (public)
+router.post('/', upload.array('attachments', 5), async (req, res) => {
+  try {
+    const { applicationType } = req.body;
+
+    let applicationData = {
+      applicationType: applicationType || 'startup',
+      phone: req.body.phone
+    };
+
+    if (applicationType === 'startup') {
+      // ===== STARTUP ARIZASI =====
+      const { startupName, founders, email, description, teamMembers, eventId } = req.body;
+
+      // Maydonlarni tekshirish
+      if (!startupName || !founders || !email || !description || !teamMembers) {
+        return res.status(400).json({ 
+          message: 'Barcha maydonlar kiritilishi shart' 
+        });
+      }
+
+      // Team members ni parse qilish
+      let parsedTeamMembers = teamMembers;
+      if (typeof teamMembers === 'string') {
+        try {
+          parsedTeamMembers = JSON.parse(teamMembers);
+        } catch (parseError) {
+          return res.status(400).json({ 
+            message: 'Jamoa a\'zolari ma\'lumotlari noto\'g\'ri formatda' 
+          });
+        }
+      }
+
+      // Founders ni parse qilish
+      let parsedFounders = founders;
+      if (typeof founders === 'string') {
+        try {
+          parsedFounders = JSON.parse(founders);
+        } catch (parseError) {
+          parsedFounders = [founders];
+        }
+      }
+
+      // EventId ni tekshirish
+      if (eventId) {
+        const event = await Event.findById(eventId);
+        if (!event) {
+          return res.status(404).json({ message: 'Tadbir topilmadi' });
+        }
+      }
+
+      // Fayllarni qo'shish
+      const attachments = [];
+      if (req.files && req.files.length > 0) {
+        req.files.forEach(file => {
+          attachments.push(`/uploads/applications/${file.filename}`);
+        });
+      }
+
+      applicationData = {
+        ...applicationData,
+        startupName,
+        founders: parsedFounders,
+        email,
+        description,
+        teamMembers: parsedTeamMembers,
+        attachments,
+        eventId: eventId || null
+      };
+
+    } else {
+      // ===== ODDIY ARIZA =====
+      const { fullName, lastName, birthDate, address, problemType, problemDescription } = req.body;
+
+      // Maydonlarni tekshirish
+      if (!fullName || !lastName || !birthDate || !address || !problemType || !problemDescription) {
+        return res.status(400).json({ 
+          message: 'Barcha maydonlar kiritilishi shart' 
+        });
+      }
+
+      applicationData = {
+        ...applicationData,
+        fullName,
+        lastName,
+        birthDate: new Date(birthDate),
+        address,
+        problemType,
+        problemDescription
+      };
+    }
+
+    const application = new Application(applicationData);
+    await application.save();
+
+    res.status(201).json({
+      message: 'Ariza muvaffaqiyatli yuborildi',
+      application
+    });
+
+  } catch (error) {
+    console.error('Create application xatosi:', error);
+    
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ 
+        message: 'Validatsiya xatosi', 
+        errors: messages 
+      });
+    }
+    
+    res.status(500).json({ message: 'Server xatosi' });
+  }
+});
+
+// Ariza statusini o'zgartirish (admin only)
+router.patch('/:id/status', authenticate, adminOnly, async (req, res) => {
+  try {
+    const { status, rejectionReason } = req.body;
+    const applicationId = req.params.id;
+
+    const validStatuses = ['pending', 'reviewing', 'accepted', 'rejected'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ 
+        message: 'Noto\'g\'ri status' 
+      });
+    }
+
+    // Rad etish uchun sabab kerak
+    if (status === 'rejected' && !rejectionReason) {
+      return res.status(400).json({ 
+        message: 'Rad etish uchun sabab kiritilishi shart' 
+      });
+    }
+
+    const updateData = { status };
+    if (status === 'rejected') {
+      updateData.rejectionReason = rejectionReason;
+    } else {
+      updateData.rejectionReason = '';
+    }
+
+    const application = await Application.findByIdAndUpdate(
+      applicationId,
+      updateData,
+      { new: true }
+    ).populate('eventId', 'title date');
+    
+    if (!application) {
+      return res.status(404).json({ 
+        message: 'Ariza topilmadi' 
+      });
+    }
+
+    res.json({
+      message: 'Ariza statusi muvaffaqiyatli o\'zgartirildi',
+      application
+    });
+
+  } catch (error) {
+    console.error('Update application status xatosi:', error);
+    res.status(500).json({ message: 'Server xatosi' });
+  }
+});
+
+// Ariza raqami bo'yicha tekshirish (public)
+router.get('/check/:applicationNumber', async (req, res) => {
+  try {
+    const { applicationNumber } = req.params;
+
+    const application = await Application.findOne({ applicationNumber })
+      .select('applicationNumber startupName status rejectionReason createdAt')
+      .populate('eventId', 'title');
+
+    if (!application) {
+      return res.status(404).json({ 
+        message: 'Ariza topilmadi. Iltimos, ariza raqamini tekshiring.' 
+      });
+    }
+
+    res.json({
+      message: 'Ariza topildi',
+      application: {
+        applicationNumber: application.applicationNumber,
+        startupName: application.startupName,
+        status: application.status,
+        rejectionReason: application.rejectionReason,
+        eventTitle: application.eventId?.title || null,
+        createdAt: application.createdAt
+      }
+    });
+
+  } catch (error) {
+    console.error('Check application xatosi:', error);
+    res.status(500).json({ message: 'Server xatosi' });
+  }
+});
+
+// Arizani o'chirish (owner only)
+router.delete('/:id', authenticate, ownerOnly, async (req, res) => {
+  try {
+    const applicationId = req.params.id;
+
+    const application = await Application.findById(applicationId);
+    
+    if (!application) {
+      return res.status(404).json({ 
+        message: 'Ariza topilmadi' 
+      });
+    }
+
+    // Fayllarni o'chirish
+    if (application.attachments && application.attachments.length > 0) {
+      application.attachments.forEach(filePath => {
+        const fullPath = path.join(__dirname, '../../', filePath);
+        if (fs.existsSync(fullPath)) {
+          fs.unlinkSync(fullPath);
+        }
+      });
+    }
+
+    // Arizani o'chirish
+    await Application.findByIdAndDelete(applicationId);
+
+    res.json({
+      message: 'Ariza muvaffaqiyatli o\'chirildi'
+    });
+
+  } catch (error) {
+    console.error('Delete application xatosi:', error);
+    res.status(500).json({ message: 'Server xatosi' });
+  }
+});
+
+// Arizalar statistikasi (admin only)
+router.get('/stats/summary', authenticate, adminOnly, async (req, res) => {
+  try {
+    const stats = await Application.aggregate([
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const totalApplications = await Application.countDocuments();
+    const thisMonthApplications = await Application.countDocuments({
+      createdAt: {
+        $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+      }
+    });
+
+    res.json({
+      message: 'Statistika muvaffaqiyatli olindi',
+      stats: {
+        byStatus: stats.reduce((acc, stat) => {
+          acc[stat._id] = stat.count;
+          return acc;
+        }, {}),
+        total: totalApplications,
+        thisMonth: thisMonthApplications
+      }
+    });
+
+  } catch (error) {
+    console.error('Get stats xatosi:', error);
+    res.status(500).json({ message: 'Server xatosi' });
+  }
+});
+
+module.exports = router;
