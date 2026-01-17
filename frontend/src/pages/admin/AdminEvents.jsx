@@ -26,7 +26,7 @@ const AdminEvents = () => {
 
   const fetchEvents = async () => {
     try {
-      const response = await axios.get('/api/events?limit=50');
+      const response = await axios.get('/events?limit=50');
       setEvents(response.data.events);
     } catch (error) {
       console.error('Tadbirlarni olishda xatolik:', error);
