@@ -2,7 +2,7 @@ import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import axios from 'axios';
 
 // API base URL
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // Axios konfiguratsiyasi
 axios.defaults.baseURL = API_BASE_URL;
