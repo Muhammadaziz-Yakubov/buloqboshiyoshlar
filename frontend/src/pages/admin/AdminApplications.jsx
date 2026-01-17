@@ -666,7 +666,7 @@ const AdminApplications = () => {
                       {selectedApplication.attachments.map((file, index) => (
                         <a
                           key={index}
-                          href={`http://localhost:5000${file}`}
+                          href={`https://buloqboshi-yoshlar-agentligi.vercel.app/${file}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm hover:bg-blue-100 transition-colors"

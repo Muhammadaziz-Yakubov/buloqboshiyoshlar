@@ -26,7 +26,7 @@ const AdminEvents = () => {
 
   const fetchEvents = async () => {
     try {
-      const response = await axios.get('/events?limit=50');
+      const response = await axios.get('/api/events?limit=50');
       setEvents(response.data.events);
     } catch (error) {
       console.error('Tadbirlarni olishda xatolik:', error);
@@ -48,7 +48,7 @@ const AdminEvents = () => {
     });
 
     try {
-      await axios.post('/events', formDataToSend, {
+      await axios.post('/api/events', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -83,7 +83,7 @@ const AdminEvents = () => {
     });
 
     try {
-      await axios.put(`/events/${selectedEvent._id}`, formDataToSend, {
+      await axios.put(`/api/events/${selectedEvent._id}`, formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -110,7 +110,7 @@ const AdminEvents = () => {
     if (!window.confirm('Tadbirni o\'chirmoqchimisiz?')) return;
 
     try {
-      await axios.delete(`/events/${eventId}`);
+      await axios.delete(`/api/events/${eventId}`);
       fetchEvents();
     } catch (error) {
       console.error('Tadbir o\'chirishda xatolik:', error);
@@ -120,7 +120,7 @@ const AdminEvents = () => {
 
   const handleToggleStatus = async (eventId, isActive) => {
     try {
-      await axios.patch(`/events/${eventId}/status`, { isActive: !isActive });
+      await axios.patch(`/api/events/${eventId}/status`, { isActive: !isActive });
       fetchEvents();
     } catch (error) {
       console.error('Status o\'zgartirishda xatolik:', error);
@@ -147,7 +147,7 @@ const AdminEvents = () => {
     setRegistrationsLoading(true);
     
     try {
-      const response = await axios.get(`/event-registrations/event/${event._id}`);
+      const response = await axios.get(`/api/event-registrations/event/${event._id}`);
       setRegistrations(response.data.registrations);
     } catch (error) {
       console.error('Ro\'yxatdan o\'tganlarni olishda xatolik:', error);
@@ -159,10 +159,10 @@ const AdminEvents = () => {
 
   const handleRegistrationStatus = async (regId, status) => {
     try {
-      await axios.patch(`/event-registrations/${regId}/status`, { status });
+      await axios.patch(`/api/event-registrations/${regId}/status`, { status });
       // Ro'yxatni yangilash
       if (selectedEvent) {
-        const response = await axios.get(`/event-registrations/event/${selectedEvent._id}`);
+        const response = await axios.get(`/api/event-registrations/event/${selectedEvent._id}`);
         setRegistrations(response.data.registrations);
       }
     } catch (error) {

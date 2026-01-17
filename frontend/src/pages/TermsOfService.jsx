@@ -19,7 +19,7 @@ const TermsOfService = () => {
             Buloqboshi tumani Yoshlar ishlari agentligi veb-saytidan foydalanish qoidalari va shartlari
           </p>
           <p className="text-white/60 text-sm mt-4">
-            Oxirgi yangilanish: 2024-yil, 15-yanvar
+            Oxirgi yangilanish: 2026-yil, 17-yanvar
           </p>
         </div>
       </div>

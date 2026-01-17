@@ -19,7 +19,7 @@ const PrivacyPolicy = () => {
             Buloqboshi tumani Yoshlar ishlari agentligi shaxsiy ma'lumotlaringizni himoya qilish bo'yicha qat'iy siyosatga amal qiladi
           </p>
           <p className="text-white/60 text-sm mt-4">
-            Oxirgi yangilanish: 2024-yil, 15-yanvar
+            Oxirgi yangilanish: 2026-yil, 17-yanvar
           </p>
         </div>
       </div>
