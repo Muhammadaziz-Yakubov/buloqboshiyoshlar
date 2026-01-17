@@ -87,7 +87,7 @@ const EventDetail = () => {
           <div className="relative h-64 md:h-96 bg-gradient-to-br from-primary-400 to-purple-500">
             {event.image ? (
               <img 
-                src={`http://localhost:5000${event.image}`} 
+                src={`https://buloqboshiyoshlar.onrender.com${event.image}`} 
                 alt={event.title}
                 className="w-full h-full object-cover"
               />

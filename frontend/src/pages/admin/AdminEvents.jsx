@@ -66,6 +66,7 @@ const AdminEvents = () => {
       fetchEvents();
     } catch (error) {
       console.error('Tadbir yaratishda xatolik:', error);
+      console.log('Server javobi:', error.response?.data);
       const errorMessage = error.response?.data?.message || 'Tadbir yaratishda xatolik yuz berdi';
       alert(errorMessage);
     }
@@ -216,7 +217,7 @@ const AdminEvents = () => {
                 <div className="relative h-36 sm:h-44 lg:h-48 bg-gradient-to-br from-primary-400 to-purple-500">
                   {event.image ? (
                     <img
-                      src={`http://localhost:5000${event.image}`}
+                      src={`https://buloqboshiyoshlar.onrender.com${event.image}`}
                       alt={event.title}
                       className="w-full h-full object-cover"
                     />

@@ -17,7 +17,7 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ 
+const upload = multer({
   storage: storage,
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB
@@ -35,7 +35,7 @@ const upload = multer({
 router.get('/', async (req, res) => {
   try {
     const { page = 1, limit = 10, status = 'active' } = req.query;
-    
+
     let filter = {};
     if (status === 'active') {
       filter.isActive = true;
@@ -68,8 +68,8 @@ router.get('/:id', async (req, res) => {
     const event = await Event.findById(req.params.id);
 
     if (!event) {
-      return res.status(404).json({ 
-        message: 'Tadbir topilmadi' 
+      return res.status(404).json({
+        message: 'Tadbir topilmadi'
       });
     }
 
@@ -87,19 +87,21 @@ router.get('/:id', async (req, res) => {
 // Yangi tadbir yaratish (admin only)
 router.post('/', authenticate, adminOnly, upload.single('image'), async (req, res) => {
   try {
+    console.log('Tadbir yaratish so\'rovi:', req.body);
+    console.log('Yuklangan rasm:', req.file);
     const { title, description, date, time, location } = req.body;
 
     // Maydonlarni tekshirish
     if (!title || !description || !date || !time || !location) {
-      return res.status(400).json({ 
-        message: 'Barcha maydonlar kiritilishi shart' 
+      return res.status(400).json({
+        message: 'Barcha maydonlar kiritilishi shart'
       });
     }
 
     // Rasm faylini tekshirish
     if (!req.file) {
-      return res.status(400).json({ 
-        message: 'Tadbir rasmi yuklanishi shart' 
+      return res.status(400).json({
+        message: 'Tadbir rasmi yuklanishi shart'
       });
     }
 
@@ -142,24 +144,24 @@ router.post('/', authenticate, adminOnly, upload.single('image'), async (req, re
 
   } catch (error) {
     console.error('Create event xatosi:', error);
-    
+
     // Mongoose validation xatolarini qayta ishlash
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(err => err.message);
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: messages.join(', '),
         errors: error.errors
       });
     }
-    
+
     // Multer xatolarini qayta ishlash
     if (error.message && error.message.includes('Faqat rasm fayllari')) {
       return res.status(400).json({ message: error.message });
     }
-    
-    res.status(500).json({ 
+
+    res.status(500).json({
       message: 'Server xatosi',
-      error: error.message 
+      error: error.message
     });
   }
 });
@@ -172,10 +174,10 @@ router.put('/:id', authenticate, adminOnly, upload.single('image'), async (req, 
 
     // Tadbirni topish
     const event = await Event.findById(eventId);
-    
+
     if (!event) {
-      return res.status(404).json({ 
-        message: 'Tadbir topilmadi' 
+      return res.status(404).json({
+        message: 'Tadbir topilmadi'
       });
     }
 
@@ -231,10 +233,10 @@ router.delete('/:id', authenticate, adminOnly, async (req, res) => {
 
     // Tadbirni topish
     const event = await Event.findById(eventId);
-    
+
     if (!event) {
-      return res.status(404).json({ 
-        message: 'Tadbir topilmadi' 
+      return res.status(404).json({
+        message: 'Tadbir topilmadi'
       });
     }
 
@@ -267,16 +269,16 @@ router.patch('/:id/status', authenticate, adminOnly, async (req, res) => {
     const eventId = req.params.id;
 
     if (typeof isActive !== 'boolean') {
-      return res.status(400).json({ 
-        message: 'Status boolean qiymat bo\'lishi kerak' 
+      return res.status(400).json({
+        message: 'Status boolean qiymat bo\'lishi kerak'
       });
     }
 
     const event = await Event.findById(eventId);
-    
+
     if (!event) {
-      return res.status(404).json({ 
-        message: 'Tadbir topilmadi' 
+      return res.status(404).json({
+        message: 'Tadbir topilmadi'
       });
     }
 

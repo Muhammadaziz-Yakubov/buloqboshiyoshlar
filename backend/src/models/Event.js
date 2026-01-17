@@ -20,8 +20,7 @@ const EventSchema = new mongoose.Schema({
   },
   time: {
     type: String,
-    required: [true, 'Tadbir vaqti kiritilishi shart'],
-    match: [/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Vaqt formati HH:MM bo\'lishi kerak']
+    required: [true, 'Tadbir vaqti kiritilishi shart']
   },
   location: {
     type: String,
