@@ -118,7 +118,7 @@ const Events = () => {
                     <div className="relative h-56 bg-gradient-to-br from-primary-400 to-purple-500 overflow-hidden">
                       {event.image ? (
                         <img 
-                          src={`http://localhost:5000${event.image}`} 
+                          src={`https://buloqboshiyoshlar.onrender.com${event.image}`} 
                           alt={event.title}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                         />
