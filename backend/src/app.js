@@ -54,7 +54,10 @@ app.get('/', (req, res) => {
 // Xatoliklar uchun middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ message: 'Server xatosi' });
+  res.status(500).json({
+    message: 'Server xatosi',
+    error: err.message // Xatolik sababini qaytarish
+  });
 });
 
 // Serverni ishga tushirish

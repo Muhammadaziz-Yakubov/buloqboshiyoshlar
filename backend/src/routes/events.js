@@ -6,10 +6,25 @@ const Event = require('../models/Event');
 const { authenticate, adminOnly } = require('../middleware/auth');
 const { sendEventToTelegram, deleteTelegramPost, updateTelegramPost } = require('../services/telegramBot');
 
+const fs = require('fs');
+
+// Upload papkalarini tekshirish va yaratish
+const uploadDirs = ['uploads', 'uploads/events'];
+uploadDirs.forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
+
 // File upload konfiguratsiyasi
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/events/');
+    // Har doim papka borligini tekshirish
+    const dir = 'uploads/events/';
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
