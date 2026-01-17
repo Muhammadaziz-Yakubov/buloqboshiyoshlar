@@ -16,8 +16,9 @@ let telegramBot = null;
 if (TELEGRAM_BOT_TOKEN) {
   try {
     telegramBot = new TelegramBot(TELEGRAM_BOT_TOKEN, {
-      polling: true
+      polling: false // Polling o'chirilgan, chunki production da muammo keltirib chiqaradi
     });
+    console.log('Telegram bot muvaffaqiyatli yaratildi');
   } catch (error) {
     console.log('Telegram bot yaratishda xatolik:', error.message);
     telegramBot = null;
@@ -75,7 +76,7 @@ const sendEventToTelegram = async (eventData) => {
     // Rasm fayli bilan yuborish
     if (eventData.imagePath) {
       const fullImagePath = path.join(__dirname, '../../', eventData.imagePath);
-      
+
       if (fs.existsSync(fullImagePath)) {
         const sentMessage = await telegramBot.sendPhoto(
           TELEGRAM_GROUP_ID,
@@ -131,10 +132,10 @@ const updateTelegramPost = async (messageId, eventData) => {
   try {
     // Avvalgi postni o'chirish
     await deleteTelegramPost(messageId);
-    
+
     // Yangi post yuborish
     const newMessageId = await sendEventToTelegram(eventData);
-    
+
     console.log('Telegram post muvaffaqiyatli yangilandi');
     return newMessageId;
 
@@ -144,12 +145,13 @@ const updateTelegramPost = async (messageId, eventData) => {
   }
 };
 
-// Bot xatolarini kuzatish
-if (telegramBot) {
-  telegramBot.on('polling_error', (error) => {
-    console.error('Telegram bot polling error:', error);
-  });
-}
+// Bot xatolarini kuzatish - polling o'chirilgan
+// if (telegramBot) {
+//   telegramBot.on('polling_error', (error) => {
+//     console.error('Telegram bot polling error:', error);
+//   });
+// }
+
 
 // Bot qabul qilgan xabarlarni kuzatish (debug uchun) - o'chirilgan
 // if (telegramBot) {

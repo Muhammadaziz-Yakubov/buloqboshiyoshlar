@@ -38,7 +38,7 @@ const AdminEvents = () => {
   const handleCreateEvent = async (e) => {
     e.preventDefault();
     const formDataToSend = new FormData();
-    
+
     Object.keys(formData).forEach(key => {
       if (key === 'image' && formData[key]) {
         formDataToSend.append(key, formData[key]);
@@ -53,7 +53,7 @@ const AdminEvents = () => {
           'Content-Type': 'multipart/form-data'
         }
       });
-      
+
       setShowCreateModal(false);
       setFormData({
         title: '',
@@ -66,14 +66,15 @@ const AdminEvents = () => {
       fetchEvents();
     } catch (error) {
       console.error('Tadbir yaratishda xatolik:', error);
-      alert('Tadbir yaratishda xatolik yuz berdi');
+      const errorMessage = error.response?.data?.message || 'Tadbir yaratishda xatolik yuz berdi';
+      alert(errorMessage);
     }
   };
 
   const handleUpdateEvent = async (e) => {
     e.preventDefault();
     const formDataToSend = new FormData();
-    
+
     Object.keys(formData).forEach(key => {
       if (key === 'image' && formData[key]) {
         formDataToSend.append(key, formData[key]);
@@ -88,7 +89,7 @@ const AdminEvents = () => {
           'Content-Type': 'multipart/form-data'
         }
       });
-      
+
       setShowEditModal(false);
       setSelectedEvent(null);
       setFormData({
@@ -102,7 +103,8 @@ const AdminEvents = () => {
       fetchEvents();
     } catch (error) {
       console.error('Tadbir yangilashda xatolik:', error);
-      alert('Tadbir yangilashda xatolik yuz berdi');
+      const errorMessage = error.response?.data?.message || 'Tadbir yangilashda xatolik yuz berdi';
+      alert(errorMessage);
     }
   };
 
@@ -114,7 +116,8 @@ const AdminEvents = () => {
       fetchEvents();
     } catch (error) {
       console.error('Tadbir o\'chirishda xatolik:', error);
-      alert('Tadbir o\'chirishda xatolik yuz berdi');
+      const errorMessage = error.response?.data?.message || 'Tadbir o\'chirishda xatolik yuz berdi';
+      alert(errorMessage);
     }
   };
 
@@ -145,7 +148,7 @@ const AdminEvents = () => {
     setSelectedEvent(event);
     setShowRegistrationsModal(true);
     setRegistrationsLoading(true);
-    
+
     try {
       const response = await axios.get(`/event-registrations/event/${event._id}`);
       setRegistrations(response.data.registrations);
@@ -212,8 +215,8 @@ const AdminEvents = () => {
                 {/* Image */}
                 <div className="relative h-36 sm:h-44 lg:h-48 bg-gradient-to-br from-primary-400 to-purple-500">
                   {event.image ? (
-                    <img 
-                      src={`http://localhost:5000${event.image}`} 
+                    <img
+                      src={`http://localhost:5000${event.image}`}
                       alt={event.title}
                       className="w-full h-full object-cover"
                     />
@@ -225,41 +228,40 @@ const AdminEvents = () => {
                     </div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                  
+
                   {/* Status Badge */}
                   <div className="absolute top-3 right-3">
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${
-                      event.isActive 
-                        ? 'bg-green-500/90 text-white' 
-                        : 'bg-gray-500/90 text-white'
-                    }`}>
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${event.isActive
+                      ? 'bg-green-500/90 text-white'
+                      : 'bg-gray-500/90 text-white'
+                      }`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${event.isActive ? 'bg-white animate-pulse' : 'bg-gray-300'}`}></span>
                       {event.isActive ? 'Faol' : 'Nofaol'}
                     </span>
                   </div>
-                  
+
                   {/* Telegram Badge */}
                   {event.telegramPostId && (
                     <div className="absolute top-3 left-3">
                       <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-500/90 text-white backdrop-blur-sm">
                         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
                         </svg>
                         Telegram
                       </span>
                     </div>
                   )}
-                  
+
                   {/* Title on image */}
                   <div className="absolute bottom-3 left-3 right-3">
                     <h3 className="text-lg font-bold text-white truncate">{event.title}</h3>
                   </div>
                 </div>
-                
+
                 {/* Content */}
                 <div className="p-3 sm:p-4">
                   <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 mb-3 sm:mb-4">{event.description}</p>
-                  
+
                   <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4">
                     <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-500">
                       <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -274,7 +276,7 @@ const AdminEvents = () => {
                       <span className="truncate">{event.location}</span>
                     </div>
                   </div>
-                  
+
                   {/* Actions */}
                   <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
                     <button
@@ -359,7 +361,7 @@ const AdminEvents = () => {
                   <p className="text-sm text-gray-500">Tadbir ma'lumotlarini kiriting</p>
                 </div>
               </div>
-              
+
               <form onSubmit={handleCreateEvent}>
                 <div className="space-y-4">
                   <div>
@@ -368,7 +370,7 @@ const AdminEvents = () => {
                       type="text"
                       required
                       value={formData.title}
-                      onChange={(e) => setFormData({...formData, title: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                       placeholder="Tadbir nomi"
                     />
@@ -379,7 +381,7 @@ const AdminEvents = () => {
                       required
                       rows={3}
                       value={formData.description}
-                      onChange={(e) => setFormData({...formData, description: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all resize-none"
                       placeholder="Tadbir haqida qisqacha..."
                     />
@@ -391,7 +393,7 @@ const AdminEvents = () => {
                         type="date"
                         required
                         value={formData.date}
-                        onChange={(e) => setFormData({...formData, date: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                       />
                     </div>
@@ -401,7 +403,7 @@ const AdminEvents = () => {
                         type="time"
                         required
                         value={formData.time}
-                        onChange={(e) => setFormData({...formData, time: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                       />
                     </div>
@@ -412,7 +414,7 @@ const AdminEvents = () => {
                       type="text"
                       required
                       value={formData.location}
-                      onChange={(e) => setFormData({...formData, location: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                       className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                       placeholder="Tadbir o'tkaziladigan joy"
                     />
@@ -423,7 +425,7 @@ const AdminEvents = () => {
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={(e) => setFormData({...formData, image: e.target.files[0]})}
+                        onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })}
                         className="hidden"
                         id="event-image"
                       />
@@ -477,7 +479,7 @@ const AdminEvents = () => {
                   <p className="text-sm text-gray-500">Ma'lumotlarni yangilang</p>
                 </div>
               </div>
-              
+
               <form onSubmit={handleUpdateEvent}>
                 <div className="space-y-4">
                   <div>
@@ -486,7 +488,7 @@ const AdminEvents = () => {
                       type="text"
                       required
                       value={formData.title}
-                      onChange={(e) => setFormData({...formData, title: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                     />
                   </div>
@@ -496,7 +498,7 @@ const AdminEvents = () => {
                       required
                       rows={3}
                       value={formData.description}
-                      onChange={(e) => setFormData({...formData, description: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all resize-none"
                     />
                   </div>
@@ -507,7 +509,7 @@ const AdminEvents = () => {
                         type="date"
                         required
                         value={formData.date}
-                        onChange={(e) => setFormData({...formData, date: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                       />
                     </div>
@@ -517,7 +519,7 @@ const AdminEvents = () => {
                         type="time"
                         required
                         value={formData.time}
-                        onChange={(e) => setFormData({...formData, time: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                       />
                     </div>
@@ -528,7 +530,7 @@ const AdminEvents = () => {
                       type="text"
                       required
                       value={formData.location}
-                      onChange={(e) => setFormData({...formData, location: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                       className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                     />
                   </div>
@@ -538,7 +540,7 @@ const AdminEvents = () => {
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={(e) => setFormData({...formData, image: e.target.files[0]})}
+                        onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })}
                         className="hidden"
                         id="edit-event-image"
                       />
@@ -603,7 +605,7 @@ const AdminEvents = () => {
                 </button>
               </div>
             </div>
-            
+
             <div className="p-6 overflow-y-auto max-h-[60vh]">
               {registrationsLoading ? (
                 <div className="flex items-center justify-center py-12">
@@ -637,13 +639,12 @@ const AdminEvents = () => {
                           </td>
                           <td className="py-3 text-sm text-gray-600">{reg.phone}</td>
                           <td className="py-3">
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                              reg.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${reg.status === 'confirmed' ? 'bg-green-100 text-green-700' :
                               reg.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                              'bg-yellow-100 text-yellow-700'
-                            }`}>
+                                'bg-yellow-100 text-yellow-700'
+                              }`}>
                               {reg.status === 'confirmed' ? 'Tasdiqlangan' :
-                               reg.status === 'cancelled' ? 'Bekor qilingan' : 'Kutilmoqda'}
+                                reg.status === 'cancelled' ? 'Bekor qilingan' : 'Kutilmoqda'}
                             </span>
                           </td>
                           <td className="py-3 text-sm text-gray-500">

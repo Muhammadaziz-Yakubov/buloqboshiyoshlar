@@ -142,7 +142,25 @@ router.post('/', authenticate, adminOnly, upload.single('image'), async (req, re
 
   } catch (error) {
     console.error('Create event xatosi:', error);
-    res.status(500).json({ message: 'Server xatosi' });
+    
+    // Mongoose validation xatolarini qayta ishlash
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ 
+        message: messages.join(', '),
+        errors: error.errors
+      });
+    }
+    
+    // Multer xatolarini qayta ishlash
+    if (error.message && error.message.includes('Faqat rasm fayllari')) {
+      return res.status(400).json({ message: error.message });
+    }
+    
+    res.status(500).json({ 
+      message: 'Server xatosi',
+      error: error.message 
+    });
   }
 });
 
