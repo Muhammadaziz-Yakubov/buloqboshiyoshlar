@@ -96,12 +96,12 @@ createOwner();
 4. Parol: `admin123`
 5. Admin panelga o'ting
 
-## 6. Tadbir yaratish
+## 6. Startup arizalarini boshqarish
 
-1. Admin panel → Tadbirlar
-2. "Yangi tadbir" tugmasi
-3. Ma'lumotlarni to'ldiring
-4. Saqlang - u Telegramga avtomatik yuboriladi
+1. Admin panel → Arizalar
+2. Yangi kelgan startup arizalarini ko'ring
+3. Arizani ko'rib chiqing va statusini o'zgartiring
+4. Har bir yangi ariza Telegramga avtomatik yuboriladi
 
 ## Qo'shimcha ma'lumotlar
 

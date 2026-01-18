@@ -25,8 +25,8 @@ if (TELEGRAM_BOT_TOKEN) {
   }
 }
 
-// Tadbir haqida post yuborish funksiyasi
-const sendEventToTelegram = async (eventData) => {
+// Startup ariza haqida post yuborish funksiyasi
+const sendStartupApplicationToTelegram = async (applicationData) => {
   try {
     if (!telegramBot || !TELEGRAM_GROUP_ID) {
       console.log('Telegram bot yoki group ID mavjud emas');
@@ -34,24 +34,34 @@ const sendEventToTelegram = async (eventData) => {
     }
 
     // Sana va vaqtni formatlash
-    const formattedDate = new Date(eventData.date).toLocaleDateString('uz-UZ', {
+    const formattedDate = new Date(applicationData.createdAt).toLocaleDateString('uz-UZ', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
 
+    // Asoschilar ro'yxatini formatlash
+    const foundersList = applicationData.founders.map(founder => `• ${founder}`).join('\n');
+
     // Post matni
-    const messageText = `🚀 *Yangi tadbir e'lon qilindi!*
+    const messageText = `🚀 *Yangi startup ariza kelib tushdi!*
 
-📌 *${eventData.title}*
+📌 *${applicationData.startupName}*
 
-📝 ${eventData.description}
+📝 *Tavsif:* ${applicationData.description.substring(0, 300)}${applicationData.description.length > 300 ? '...' : ''}
 
-📅 *Sana:* ${formattedDate}
-⏰ *Vaqt:* ${eventData.time}
-📍 *Joy:* ${eventData.location}
+👥 *Asoschilar:*
+${foundersList}
 
-✅ *Ro'yxatdan o'tish uchun saytimizga tashrif buyuring!*`;
+📧 *Email:* ${applicationData.email}
+📱 *Telefon:* ${applicationData.phone}
+
+📅 *Ariza sanasi:* ${formattedDate}
+🔢 *Ariza raqami:* ${applicationData.applicationNumber}
+
+📋 *Jamoa a'zolari:* ${applicationData.teamMembers.length} ta
+
+✅ *Admin paneldan ko'rib chiqing!*`;
 
     // Inline tugma faqat haqiqiy URL bo'lganda
     let messageOptions = {
@@ -60,12 +70,12 @@ const sendEventToTelegram = async (eventData) => {
 
     // Agar FRONTEND_URL localhost bo'lmasa, tugma qo'shamiz
     if (FRONTEND_URL && !FRONTEND_URL.includes('localhost')) {
-      const registerUrl = `${FRONTEND_URL}/events/register?eventId=${eventData.eventId || ''}`;
+      const adminUrl = `${FRONTEND_URL}/admin/applications`;
       messageOptions.reply_markup = {
         inline_keyboard: [[
           {
-            text: "✅ Ro'yxatdan o'tish",
-            url: registerUrl
+            text: "👀 Ariza ko'rish",
+            url: adminUrl
           }
         ]]
       };
@@ -73,14 +83,15 @@ const sendEventToTelegram = async (eventData) => {
 
     let messageId;
 
-    // Rasm fayli bilan yuborish
-    if (eventData.imagePath) {
-      const fullImagePath = path.join(__dirname, '../../', eventData.imagePath);
+    // Agar attachmentlar bo'lsa, birinchi rasmni yuborish
+    const imageAttachments = applicationData.attachments.filter(att => att.match(/\.(jpg|jpeg|png|gif)$/i));
+    if (imageAttachments.length > 0) {
+      const imagePath = path.join(__dirname, '../../uploads/applications', imageAttachments[0]);
 
-      if (fs.existsSync(fullImagePath)) {
+      if (fs.existsSync(imagePath)) {
         const sentMessage = await telegramBot.sendPhoto(
           TELEGRAM_GROUP_ID,
-          fs.createReadStream(fullImagePath),
+          fs.createReadStream(imagePath),
           {
             caption: messageText,
             ...messageOptions
@@ -106,42 +117,12 @@ const sendEventToTelegram = async (eventData) => {
       messageId = sentMessage.message_id.toString();
     }
 
-    console.log('Telegram post muvaffaqiyatli yuborildi, Message ID:', messageId);
+    console.log('Telegram startup ariza post muvaffaqiyatli yuborildi, Message ID:', messageId);
     return messageId;
 
   } catch (error) {
     console.error('Telegram ga yuborishda xatolik:', error.message);
-    return null; // Xato bo'lsa ham tadbir yaratilsin
-  }
-};
-
-// Postni o'chirish funksiyasi
-const deleteTelegramPost = async (messageId) => {
-  try {
-    await telegramBot.deleteMessage(TELEGRAM_GROUP_ID, messageId);
-    console.log('Telegram post muvaffaqiyatli o\'chirildi');
-    return true;
-  } catch (error) {
-    console.error('Telegram postni o\'chirishda xatolik:', error);
-    return false;
-  }
-};
-
-// Postni yangilash funksiyasi
-const updateTelegramPost = async (messageId, eventData) => {
-  try {
-    // Avvalgi postni o'chirish
-    await deleteTelegramPost(messageId);
-
-    // Yangi post yuborish
-    const newMessageId = await sendEventToTelegram(eventData);
-
-    console.log('Telegram post muvaffaqiyatli yangilandi');
-    return newMessageId;
-
-  } catch (error) {
-    console.error('Telegram postni yangilashda xatolik:', error);
-    throw new Error('Telegram postni yangilash muvaffaqiyatsiz bo\'ldi');
+    return null; // Xato bo'lsa ham ariza yaratilsin
   }
 };
 
@@ -162,7 +143,5 @@ const updateTelegramPost = async (messageId, eventData) => {
 
 module.exports = {
   telegramBot,
-  sendEventToTelegram,
-  deleteTelegramPost,
-  updateTelegramPost
+  sendStartupApplicationToTelegram
 };

@@ -3,38 +3,31 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 const Home = () => {
-  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState([
     { number: '38808+', label: 'Yoshlar' },
-    { number: '0', label: 'Arizalar' },
-    { number: '0', label: 'Tadbirlar' }
+    { number: '0', label: 'Startuplar' },
+    { number: '0', label: 'Arizalar' }
   ]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Tadbirlarni olish
-        const eventsResponse = await axios.get('/events?limit=3');
-        setEvents(eventsResponse.data.events || []);
-        
         // Statistikalarni olish
-        const [eventsCountRes, applicationsRes] = await Promise.all([
-          axios.get('/events?limit=1000'),
-          axios.get('/applications?limit=1')
-        ]);
-
-        const eventsCount = eventsCountRes.data.events?.length || eventsCountRes.data.total || 0;
+        const applicationsRes = await axios.get('/applications?limit=1');
         const applicationsCount = applicationsRes.data.total || applicationsRes.data.applications?.length || 0;
+
+        // Startuplar sonini hisoblash (qabul qilingan arizalar)
+        const startupsRes = await axios.get('/applications?status=accepted&limit=1000');
+        const startupsCount = startupsRes.data.total || startupsRes.data.applications?.length || 0;
 
         setStats([
           { number: '38808+', label: 'Yoshlar' },
-          { number: String(applicationsCount), label: 'Arizalar' },
-          { number: String(eventsCount), label: 'Tadbirlar' }
+          { number: String(startupsCount), label: 'Startuplar' },
+          { number: String(applicationsCount), label: 'Arizalar' }
         ]);
       } catch (error) {
         console.error('Ma\'lumotlarni olishda xatolik:', error);
-        setEvents([]);
       } finally {
         setLoading(false);
       }
@@ -57,21 +50,21 @@ const Home = () => {
     {
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
         </svg>
       ),
-      title: 'Ish bilan ta\'minlash',
-      description: "Yoshlarga ish topish, kasbiy ko'nikmalarini oshirish va karyera yo'nalishlarini tanlashda yordam",
+      title: 'Moliyaviy yordam',
+      description: "Startuplarga grantlar, investitsiyalar va moliyaviy ko'mak berish",
       color: 'from-purple-500 to-pink-500',
     },
     {
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
         </svg>
       ),
-      title: "Ta'lim va treninglar",
-      description: "Yoshlar uchun bepul treninglar, seminarlar va malaka oshirish kurslari",
+      title: "Inkubatsiya dasturi",
+      description: "Startuplarga ofis joy, mentorlik va biznes rivojlanish uchun yordam",
       color: 'from-green-500 to-emerald-500',
     },
     {
@@ -80,8 +73,8 @@ const Home = () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
         </svg>
       ),
-      title: 'Ijtimoiy yordam',
-      description: "Yoshlarga ijtimoiy masalalarda yordam, maslahat va yo'naltirish xizmatlari",
+      title: 'Networking',
+      description: "Investitorlar, mentorlar va boshqa tadbirkorlar bilan bog'lanish imkoniyati",
       color: 'from-orange-500 to-red-500',
     },
   ];
@@ -118,11 +111,11 @@ const Home = () => {
           </h1>
           
           <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/80 max-w-3xl mx-auto mb-8 sm:mb-12 animate-fade-in-up animate-delay-200 leading-relaxed px-2">
-            Yoshlarning muammolarini hal qilish, ularni qo'llab-quvvatlash va 
-            kelajakka yo'l ochish uchun <span className="text-white font-semibold">yagona platforma</span>
+            Yoshlarning startup g'oyalarini rivojlantirish, moliyaviy yordam ko'rsatish va
+            muvaffaqiyatli biznes qurish uchun <span className="text-white font-semibold">yagona platforma</span>
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center animate-fade-in-up animate-delay-300 px-4 sm:px-0">
+          <div className="flex justify-center animate-fade-in-up animate-delay-300 px-4 sm:px-0">
             <Link
               to="/application"
               className="group relative inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-white text-primary-700 rounded-xl sm:rounded-2xl font-semibold text-base sm:text-lg shadow-2xl shadow-white/20 hover:shadow-white/30 transform hover:-translate-y-1 transition-all duration-300"
@@ -130,20 +123,8 @@ const Home = () => {
               <svg className="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-              Ariza yuborish
+              Startup ariza yuborish
               <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-ping"></span>
-            </Link>
-            <Link
-              to="/events"
-              className="group inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white rounded-xl sm:rounded-2xl font-semibold text-base sm:text-lg hover:bg-white/20 hover:border-white/50 transform hover:-translate-y-1 transition-all duration-300"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              Tadbirlar
-              <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
             </Link>
           </div>
 
@@ -180,8 +161,8 @@ const Home = () => {
               Yoshlar uchun <span className="bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">imkoniyatlar</span>
             </h2>
             <p className="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-2">
-              Buloqboshi tumani Yoshlar ishlari agentligi - yoshlarning muammolarini hal qilish, 
-              ularni qo'llab-quvvatlash va kelajakka yo'l ochish uchun tashkil etilgan platforma.
+              Buloqboshi tumani Yoshlar ishlari agentligi - yoshlarning startup g'oyalarini rivojlantirish,
+              moliyaviy yordam ko'rsatish va muvaffaqiyatli biznes qurish uchun tashkil etilgan platforma.
             </p>
           </div>
 
@@ -199,108 +180,6 @@ const Home = () => {
                 <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${feature.color} rounded-b-2xl sm:rounded-b-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Events Section */}
-      <section className="py-12 sm:py-16 lg:py-24 bg-gradient-to-b from-gray-50 to-white relative">
-        <div className="absolute inset-0 pattern-dots"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-            <span className="inline-block px-3 sm:px-4 py-1.5 sm:py-2 bg-secondary-50 text-secondary-700 rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
-              Tadbirlar
-            </span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6">
-              Kelgusi <span className="bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">tadbirlar</span>
-            </h2>
-            <p className="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-2">
-              Bizning tadbirlarimizda qatnashib, bilimingizni oshiring va 
-              yangi imkoniyatlarni kashf eting
-            </p>
-          </div>
-
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="relative">
-                <div className="w-16 h-16 border-4 border-primary-200 rounded-full"></div>
-                <div className="absolute top-0 left-0 w-16 h-16 border-4 border-primary-600 rounded-full border-t-transparent animate-spin"></div>
-              </div>
-            </div>
-          ) : events.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-              {events.map((event, index) => (
-                <div 
-                  key={event._id} 
-                  className="group bg-white rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl shadow-gray-200/50 overflow-hidden hover:shadow-2xl hover:shadow-primary-500/10 hover:-translate-y-1 sm:hover:-translate-y-2 transition-all duration-500 border border-gray-100"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <div className="relative h-40 sm:h-48 lg:h-56 bg-gradient-to-br from-primary-400 to-purple-500 overflow-hidden">
-                    {event.image ? (
-                      <img 
-                        src={`http://localhost:5000${event.image}`} 
-                        alt={event.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <svg className="w-20 h-20 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <div className="flex items-center gap-2 text-white/90 text-sm">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        {new Date(event.date).toLocaleDateString('uz-UZ')}
-                        <span className="mx-1">•</span>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        {event.time}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-4 sm:p-5 lg:p-6">
-                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3 group-hover:text-primary-600 transition-colors line-clamp-1">{event.title}</h3>
-                    <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 line-clamp-2 leading-relaxed">{event.description}</p>
-                    <Link
-                      to={`/events/${event._id}`}
-                      className="inline-flex items-center gap-2 text-primary-600 font-semibold hover:text-primary-700 group/link"
-                    >
-                      Batafsil
-                      <svg className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <p className="text-gray-500 text-lg">Hozircha tadbirlar mavjud emas</p>
-            </div>
-          )}
-
-          <div className="text-center mt-8 sm:mt-12 lg:mt-16">
-            <Link
-              to="/events"
-              className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-primary-600 to-purple-600 text-white rounded-xl sm:rounded-2xl font-semibold text-sm sm:text-base shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transform hover:-translate-y-1 transition-all duration-300"
-            >
-              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              Barcha tadbirlar
-            </Link>
           </div>
         </div>
       </section>
@@ -326,8 +205,8 @@ const Home = () => {
           </h2>
           
           <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/80 mb-6 sm:mb-8 lg:mb-10 max-w-2xl mx-auto leading-relaxed px-2">
-            Muammolaringizni hal qilish, yangi imkoniyatlarni kashf etish va 
-            muvaffaqiyatga erishish uchun biz bilan bog'laning
+            Startup g'oyangizni rivojlantirish, moliyaviy yordam olish va
+            muvaffaqiyatli biznes qurish uchun biz bilan bog'laning
           </p>
           
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">

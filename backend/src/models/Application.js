@@ -23,34 +23,37 @@ const TeamMemberSchema = new mongoose.Schema({
   }
 });
 
-// Application schema
+// Startup Application schema
 const ApplicationSchema = new mongoose.Schema({
   applicationNumber: {
     type: String,
     unique: true
   },
-  // Ariza turi: 'startup' yoki 'general'
-  applicationType: {
-    type: String,
-    enum: ['startup', 'general'],
-    default: 'startup'
-  },
   // ===== STARTUP ARIZASI UCHUN MAYDONLAR =====
   startupName: {
     type: String,
+    required: [true, 'Startup nomi kiritilishi shart'],
     trim: true,
     maxlength: [200, 'Startup nomi 200 ta belgidan oshmasligi kerak']
   },
   founders: {
     type: [String],
-    default: []
+    required: [true, 'Asoschilar ro\'yxatini kiritish shart'],
+    validate: {
+      validator: function(v) {
+        return v.length > 0;
+      },
+      message: 'Kamida bitta asoschi kiritilishi shart'
+    }
   },
   email: {
     type: String,
+    required: [true, 'Email kiritilishi shart'],
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Iltimos to\'g\'ri email kiriting']
   },
   description: {
     type: String,
+    required: [true, 'Startup tavsifi kiritilishi shart'],
     trim: true,
     maxlength: [2000, 'Tavsif 2000 ta belgidan oshmasligi kerak']
   },
@@ -62,36 +65,6 @@ const ApplicationSchema = new mongoose.Schema({
     type: [String],
     default: []
   },
-  eventId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Event'
-  },
-  // ===== ODDIY ARIZA UCHUN MAYDONLAR =====
-  fullName: {
-    type: String,
-    trim: true
-  },
-  lastName: {
-    type: String,
-    trim: true
-  },
-  birthDate: {
-    type: Date
-  },
-  address: {
-    type: String,
-    trim: true
-  },
-  problemType: {
-    type: String,
-    enum: ['employment', 'education', 'social', 'housing', 'health', 'legal', 'other', '']
-  },
-  problemDescription: {
-    type: String,
-    trim: true,
-    maxlength: [3000, 'Murojaat matni 3000 ta belgidan oshmasligi kerak']
-  },
-  // ===== UMUMIY MAYDONLAR =====
   phone: {
     type: String,
     required: [true, 'Telefon raqami kiritilishi shart']
@@ -127,6 +100,5 @@ ApplicationSchema.virtual('teamSize').get(function() {
 // Indexlar qo'shish
 ApplicationSchema.index({ status: 1 });
 ApplicationSchema.index({ createdAt: -1 });
-ApplicationSchema.index({ eventId: 1 });
 
 module.exports = mongoose.model('Application', ApplicationSchema);

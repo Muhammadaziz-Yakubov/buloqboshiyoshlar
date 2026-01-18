@@ -29,16 +29,16 @@ const Footer = () => {
 
   const quickLinks = [
     { name: 'Bosh sahifa', href: '/' },
-    { name: 'Tadbirlar', href: '/events' },
-    { name: 'Ariza yuborish', href: '/application' },
+    { name: 'Startup ariza', href: '/application' },
+    { name: 'Ariza tekshirish', href: '/check-application' },
     { name: 'Aloqa', href: '#contact' },
   ];
 
   const resources = [
     { name: 'Startup qo\'llab-quvvatlash', href: '#' },
-    { name: 'Ish bilan ta\'minlash', href: '#' },
-    { name: 'Ta\'lim dasturlari', href: '#' },
-    { name: 'Ijtimoiy yordam', href: '#' },
+    { name: 'Moliyaviy yordam', href: '#' },
+    { name: 'Inkubatsiya dasturi', href: '#' },
+    { name: 'Networking', href: '#' },
   ];
 
   return (
@@ -64,8 +64,8 @@ const Footer = () => {
               </div>
             </Link>
             <p className="text-gray-400 mb-6 leading-relaxed">
-              Buloqboshi tumani Yoshlar ishlari agentligi - yoshlarning muammolarini 
-              hal qilish va ularni qo'llab-quvvatlash uchun tashkil etilgan platforma.
+              Buloqboshi tumani Yoshlar ishlari agentligi - yoshlarning startup g'oyalarini
+              rivojlantirish va muvaffaqiyatli biznes qurish uchun tashkil etilgan platforma.
             </p>
             <div className="flex gap-3">
               {socialLinks.map((social) => (

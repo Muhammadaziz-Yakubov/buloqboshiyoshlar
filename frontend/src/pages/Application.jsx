@@ -4,7 +4,6 @@ import axios from 'axios';
 
 const Application = () => {
   const navigate = useNavigate();
-  const [applicationType, setApplicationType] = useState(''); // 'startup' yoki 'general'
   const [formData, setFormData] = useState({
     startupName: '',
     founders: [''],
@@ -13,15 +12,7 @@ const Application = () => {
     description: '',
     teamMembers: [
       { name: '', role: '', email: '', phone: '' }
-    ],
-    eventId: '',
-    // Oddiy ariza uchun qo'shimcha maydonlar
-    fullName: '',
-    lastName: '',
-    address: '',
-    birthDate: '',
-    problemType: '',
-    problemDescription: ''
+    ]
   });
   const [attachments, setAttachments] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -111,34 +102,19 @@ const Application = () => {
     try {
       // Form data yaratish
       const formDataToSend = new FormData();
-      
-      // Ariza turini qo'shish
-      formDataToSend.append('applicationType', applicationType);
 
-      if (applicationType === 'startup') {
-        // Startup arizasi uchun ma'lumotlar
-        formDataToSend.append('startupName', formData.startupName);
-        formDataToSend.append('founders', JSON.stringify(formData.founders));
-        formDataToSend.append('email', formData.email);
-        formDataToSend.append('phone', formData.phone);
-        formDataToSend.append('description', formData.description);
-        formDataToSend.append('teamMembers', JSON.stringify(formData.teamMembers));
-        if (formData.eventId) formDataToSend.append('eventId', formData.eventId);
-        
-        // Fayllarni qo'shish
-        attachments.forEach(file => {
-          formDataToSend.append('attachments', file);
-        });
-      } else {
-        // Oddiy ariza uchun ma'lumotlar
-        formDataToSend.append('fullName', formData.fullName);
-        formDataToSend.append('lastName', formData.lastName);
-        formDataToSend.append('birthDate', formData.birthDate);
-        formDataToSend.append('address', formData.address);
-        formDataToSend.append('phone', formData.phone);
-        formDataToSend.append('problemType', formData.problemType);
-        formDataToSend.append('problemDescription', formData.problemDescription);
-      }
+      // Startup arizasi uchun ma'lumotlar
+      formDataToSend.append('startupName', formData.startupName);
+      formDataToSend.append('founders', JSON.stringify(formData.founders));
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('phone', formData.phone);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('teamMembers', JSON.stringify(formData.teamMembers));
+
+      // Fayllarni qo'shish
+      attachments.forEach(file => {
+        formDataToSend.append('attachments', file);
+      });
 
       // Serverga yuborish
       const response = await axios.post('/applications', formDataToSend, {
@@ -152,8 +128,8 @@ const Application = () => {
         setApplicationNumber(response.data.application.applicationNumber);
       }
 
-      setSuccess('Arizangiz muvaffaqiyatli yuborildi! Tez orada siz bilan bog\'lanamiz.');
-      
+      setSuccess('Startup arizangiz muvaffaqiyatli yuborildi! Tez orada siz bilan bog\'lanamiz.');
+
       // Formni tozalash
       setFormData({
         startupName: '',
@@ -163,14 +139,7 @@ const Application = () => {
         description: '',
         teamMembers: [
           { name: '', role: '', email: '', phone: '' }
-        ],
-        eventId: '',
-        fullName: '',
-        lastName: '',
-        address: '',
-        birthDate: '',
-        problemType: '',
-        problemDescription: ''
+        ]
       });
       setAttachments([]);
 
@@ -212,66 +181,8 @@ const Application = () => {
       </section>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 -mt-8">
-        {/* Ariza turi tanlash */}
-        {!applicationType && !success && (
-          <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl shadow-gray-200/50 p-8 md:p-10 border border-gray-100 mb-8">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Ariza turini tanlang</h2>
-              <p className="text-gray-600">Qaysi turdagi ariza yubormoqchisiz?</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Startup ariza */}
-              <button
-                type="button"
-                onClick={() => setApplicationType('startup')}
-                className="group p-8 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl border-2 border-blue-100 hover:border-blue-300 hover:shadow-xl transition-all duration-300 text-left"
-              >
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform">
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Startup arizasi</h3>
-                <p className="text-gray-600 text-sm">
-                  Innovatsion g'oya yoki startupingiz bor? Bizning inkubator dasturimizga qo'shiling va qo'llab-quvvatlash oling.
-                </p>
-                <div className="mt-4 flex items-center text-blue-600 font-semibold text-sm">
-                  Tanlash
-                  <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </button>
-
-              {/* Oddiy ariza */}
-              <button
-                type="button"
-                onClick={() => setApplicationType('general')}
-                className="group p-8 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border-2 border-purple-100 hover:border-purple-300 hover:shadow-xl transition-all duration-300 text-left"
-              >
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform">
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Oddiy murojaat</h3>
-                <p className="text-gray-600 text-sm">
-                  Ish topish, ta'lim, ijtimoiy yordam yoki boshqa masalalar bo'yicha murojaat qiling.
-                </p>
-                <div className="mt-4 flex items-center text-purple-600 font-semibold text-sm">
-                  Tanlash
-                  <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Ariza formasi */}
-        {(applicationType || success) && (
+        {/* Startup ariza formasi */}
+        {!success && (
         <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl shadow-gray-200/50 p-8 md:p-10 border border-gray-100">
           
           {error && (
@@ -323,24 +234,8 @@ const Application = () => {
             </div>
           )}
 
-          {/* Orqaga tugmasi */}
-          {applicationType && !success && (
-            <button
-              type="button"
-              onClick={() => setApplicationType('')}
-              className="mb-6 inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Orqaga
-            </button>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* STARTUP ARIZASI */}
-            {applicationType === 'startup' && (
-            <>
             {/* Section 1: Startup ma'lumotlari */}
             <div className="space-y-6">
               <div className="flex items-center gap-3 mb-6">
@@ -610,193 +505,13 @@ const Application = () => {
               )}
             </div>
 
-            </>
-            )}
-
-            {/* ODDIY ARIZA */}
-            {applicationType === 'general' && (
-            <>
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold">1</div>
-                <h2 className="text-xl font-bold text-gray-900">Shaxsiy ma'lumotlar</h2>
-              </div>
-
-              {/* Ism va Familiya */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Ism <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </div>
-                    <input
-                      type="text"
-                      name="fullName"
-                      value={formData.fullName}
-                      onChange={handleChange}
-                      required
-                      className="input-modern pl-12"
-                      placeholder="Ismingiz"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Familiya <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </div>
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName || ''}
-                      onChange={handleChange}
-                      required
-                      className="input-modern pl-12"
-                      placeholder="Familiyangiz"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Tug'ilgan sana */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Tug'ilgan sana <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <input
-                    type="date"
-                    name="birthDate"
-                    value={formData.birthDate}
-                    onChange={handleChange}
-                    required
-                    className="input-modern pl-12"
-                  />
-                </div>
-              </div>
-
-              {/* Yashash manzili */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Yashash manzili <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  </div>
-                  <input
-                    type="text"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    required
-                    className="input-modern pl-12"
-                    placeholder="Mahalla, ko'cha, uy raqami"
-                  />
-                </div>
-              </div>
-
-              {/* Telefon */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Telefon raqam <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                  </div>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    required
-                    className="input-modern pl-12"
-                    placeholder="+998 90 123 45 67"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Section 2: Murojaat */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold">2</div>
-                <h2 className="text-xl font-bold text-gray-900">Murojaat haqida</h2>
-              </div>
-
-              {/* Murojaat turi */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Murojaat turi <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="problemType"
-                  value={formData.problemType}
-                  onChange={handleChange}
-                  required
-                  className="input-modern"
-                >
-                  <option value="">Tanlang...</option>
-                  <option value="employment">Ish bilan ta'minlash</option>
-                  <option value="education">Ta'lim va o'qish</option>
-                  <option value="social">Ijtimoiy yordam</option>
-                  <option value="housing">Uy-joy masalasi</option>
-                  <option value="health">Sog'liq masalasi</option>
-                  <option value="legal">Huquqiy yordam</option>
-                  <option value="other">Boshqa</option>
-                </select>
-              </div>
-
-              {/* Murojaat matni */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Murojaat matni <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  name="problemDescription"
-                  value={formData.problemDescription}
-                  onChange={handleChange}
-                  required
-                  rows={5}
-                  className="input-modern resize-none"
-                  placeholder="Murojaatingizni batafsil yozing..."
-                />
-              </div>
-            </div>
-            </>
-            )}
 
             {/* Submit button */}
             <div className="pt-6 border-t border-gray-100">
               <button
                 type="submit"
-                disabled={loading || !applicationType}
-                className={`w-full flex items-center justify-center gap-3 py-4 px-6 text-white rounded-xl font-semibold text-lg shadow-lg transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${
-                  applicationType === 'startup' 
-                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40'
-                    : 'bg-gradient-to-r from-purple-600 to-pink-600 shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40'
-                }`}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-3 py-4 px-6 text-white rounded-xl font-semibold text-lg shadow-lg transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none bg-gradient-to-r from-blue-600 to-cyan-600 shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40"
               >
                 {loading ? (
                   <>

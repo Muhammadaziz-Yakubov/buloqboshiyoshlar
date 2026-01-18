@@ -23,11 +23,11 @@ const AdminApplications = () => {
       setLoading(true);
       const params = { page: currentPage, limit: 10 };
       if (filter !== 'all') params.status = filter;
-      
+
       const response = await axios.get('/applications', { params });
       setApplications(response.data.applications);
       setTotalPages(response.data.totalPages);
-      
+
       // Statistikani olish
       if (response.data.stats) {
         setStats(response.data.stats);
@@ -270,7 +270,7 @@ const AdminApplications = () => {
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <p className="font-semibold text-gray-900 text-sm">
-                        {app.applicationType === 'startup' ? app.startupName : `${app.firstName} ${app.lastName}`}
+                        {app.startupName}
                       </p>
                       <p className="text-xs text-gray-500">{app.applicationNumber}</p>
                     </div>
@@ -293,11 +293,8 @@ const AdminApplications = () => {
                   <th className="px-3 lg:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Ariza №
                   </th>
-                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden md:table-cell">
-                    Turi
-                  </th>
                   <th className="px-3 lg:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Ma'lumot
+                    Startup nomi
                   </th>
                   <th className="px-3 lg:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden lg:table-cell">
                     Aloqa
@@ -319,29 +316,6 @@ const AdminApplications = () => {
                     <td className="px-6 py-4">
                       <span className="font-mono text-sm font-semibold text-primary-600 bg-primary-50 px-2 py-1 rounded">
                         {app.applicationNumber || 'N/A'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
-                        app.applicationType === 'startup' 
-                          ? 'bg-blue-100 text-blue-700' 
-                          : 'bg-purple-100 text-purple-700'
-                      }`}>
-                        {app.applicationType === 'startup' ? (
-                          <>
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                            Startup
-                          </>
-                        ) : (
-                          <>
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            Murojaat
-                          </>
-                        )}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -370,36 +344,11 @@ const AdminApplications = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      {app.applicationType === 'startup' && app.eventId ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">
-                            <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                          </div>
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">{app.eventId.title}</div>
-                            <div className="text-xs text-gray-500">
-                              {app.eventId.date && new Date(app.eventId.date).toLocaleDateString('uz-UZ')}
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="text-sm text-gray-900">{app.phone}</div>
-                      )}
+                      <div className="text-sm text-gray-900">{app.phone}</div>
                     </td>
                     <td className="px-6 py-4">
-                      {app.applicationType === 'startup' ? (
-                        <>
-                          <div className="text-sm text-gray-900">{app.email}</div>
-                          <div className="text-xs text-gray-500">{app.phone}</div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="text-sm text-gray-900">{app.phone}</div>
-                          <div className="text-xs text-gray-500">{app.address}</div>
-                        </>
-                      )}
+                      <div className="text-sm text-gray-900">{app.email}</div>
+                      <div className="text-xs text-gray-500">{app.phone}</div>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${getStatusColor(app.status)}`}>
@@ -530,7 +479,7 @@ const AdminApplications = () => {
                       </svg>
                     </div>
                     <div>
-                      <h3 className="text-lg sm:text-xl font-bold text-white">{selectedApplication.startupName || `${selectedApplication.firstName} ${selectedApplication.lastName}`}</h3>
+                      <h3 className="text-lg sm:text-xl font-bold text-white">{selectedApplication.startupName}</h3>
                       <p className="text-white/80 text-xs sm:text-sm">{selectedApplication.applicationNumber}</p>
                     </div>
                   </div>

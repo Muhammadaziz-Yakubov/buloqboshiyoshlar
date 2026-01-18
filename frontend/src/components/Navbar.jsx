@@ -29,9 +29,7 @@ const Navbar = () => {
 
   const navLinks = [
     { path: '/', label: 'Bosh sahifa' },
-    { path: '/events', label: 'Tadbirlar' },
-    { path: '/application', label: 'Ariza yuborish' },
-    { path: '/check-application', label: 'Ariza tekshirish' },
+    { path: '/application', label: 'Startup ariza' }
   ];
 
   return (

@@ -1,6 +1,6 @@
 # Buloqboshi Startuplar
 
-Buloqboshi tumanidagi startuplarni qo'llab-quvvatlash uchun yaratilgan to'liq web platforma. Y Combinator modeliga asoslangan bo'lib, tadbirlar, arizalar va boshqaruv panelini o'z ichiga oladi.
+Buloqboshi tumanidagi startuplarni qo'llab-quvvatlash uchun yaratilgan to'liq web platforma. Y Combinator modeliga asoslangan bo'lib, startup arizalarini qabul qilish, moliyaviy yordam ko'rsatish va inkubatsiya dasturini o'z ichiga oladi.
 
 ## Texnologiyalar
 
@@ -25,19 +25,14 @@ Buloqboshi tumanidagi startuplarni qo'llab-quvvatlash uchun yaratilgan to'liq we
 ### 🏠 Asosiy sahifa
 - Hero section
 - Platforma maqsadi
-- Tadbirlar ro'yxati
+- Muvaffaqiyat hikoyalari
+- Startup statistikasi
 - Kontakt ma'lumotlari
 
 ### 👤 Foydalanuvchi rollari
 - **Owner** - To'liq huquqlar, adminlarni boshqarish
-- **Admin** - Tadbirlarni boshqarish
-- **User** - Ariza topshirish, tadbirlarda qatnashish
-
-### 📅 Tadbirlar boshqaruvi
-- CRUD operatsiyalari
-- Rasm yuklash
-- Telegram bot integratsiyasi
-- Status boshqaruvi
+- **Admin** - Startup arizalarini boshqarish
+- **User** - Startup ariza topshirish
 
 ### 📝 Ariza tizimi
 - Startup ma'lumotlari
@@ -46,9 +41,9 @@ Buloqboshi tumanidagi startuplarni qo'llab-quvvatlash uchun yaratilgan to'liq we
 - Status kuzatuv
 
 ### 🤖 Telegram bot
-- Avtomatik tadbir e'lonlari
+- Avtomatik startup ariza bildirishnomalari
 - Rasm qo'llab-quvvatlash
-- Ro'yxatdan o'tish tugmalari
+- Admin panelga havolalar
 
 ## O'rnatish
 
@@ -97,13 +92,9 @@ REACT_APP_API_URL=http://localhost:5000/api
 - `PUT /api/auth/profile` - Profil yangilash
 - `PUT /api/auth/password` - Parol o'zgartirish
 
-### Tadbirlar
-- `GET /api/events` - Tadbirlar ro'yxati
-- `GET /api/events/:id` - Tadbir tafsilotlari
-- `POST /api/events` - Yangi tadbir (Admin)
-- `PUT /api/events/:id` - Tadbir yangilash (Admin)
-- `DELETE /api/events/:id` - Tadbir o'chirish (Admin)
-- `PATCH /api/events/:id/status` - Status o'zgartirish (Admin)
+### Startuplar
+- `GET /api/startups` - Qabul qilingan startup ro'yxati (Admin)
+- `GET /api/startups/stats` - Startup statistikasi (Admin)
 
 ### Arizalar
 - `GET /api/applications` - Arizalar ro'yxati (Admin)
@@ -166,8 +157,8 @@ Birinchi marta ishga tushirgandan so'ng, MongoDB da to'g'ridan-to'g'ri user yara
 ### Admin qo'shish
 Owner dashboard orqali yangi admin qo'shishingiz mumkin.
 
-### Tadbir yaratish
-Admin panel orqali tadbir yarating, u avtomatik ravishda Telegram guruhiga yuboriladi.
+### Startup arizasi qabul qilish
+Admin panel orqali startup arizalarini ko'rib chiqing va qabul qiling. Har bir yangi ariza avtomatik ravishda Telegram guruhiga yuboriladi.
 
 ## Litsenziya
 

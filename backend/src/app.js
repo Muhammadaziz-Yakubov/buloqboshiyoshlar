@@ -4,10 +4,8 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const path = require('path');
 const authRoutes = require('./routes/auth');
-const eventRoutes = require('./routes/events');
 const applicationRoutes = require('./routes/applications');
 const userRoutes = require('./routes/users');
-const eventRegistrationRoutes = require('./routes/eventRegistrations');
 const { telegramBot } = require('./services/telegramBot');
 
 // Konfiguratsiyani yuklash
@@ -18,7 +16,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: ['https://buloqboshiyoshlar-roan.vercel.app', 'https://buloqboshi-yoshlar-agentligi.vercel.app', 'http://localhost:5173'],
+  origin: ['https://buloqboshiyoshlar-roan.vercel.app', 'https://buloqboshi-yoshlar-agentligi.vercel.app', 'http://localhost:5173', 'http://localhost:5174'],
   credentials: true
 }));
 app.use(express.json());
@@ -34,10 +32,8 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/buloqbosh
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/events', eventRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/event-registrations', eventRegistrationRoutes);
 
 // Telegram botni ishga tushirish
 if (process.env.TELEGRAM_BOT_TOKEN) {

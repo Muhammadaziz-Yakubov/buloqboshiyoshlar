@@ -4,8 +4,8 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const Application = require('../models/Application');
-const Event = require('../models/Event');
 const { authenticate, adminOnly, ownerOnly } = require('../middleware/auth');
+const { sendStartupApplicationToTelegram } = require('../services/telegramBot');
 
 // File upload konfiguratsiyasi
 const storage = multer.diskStorage({
@@ -45,14 +45,12 @@ const upload = multer({
 // Barcha arizalarni olish (admin only)
 router.get('/', authenticate, adminOnly, async (req, res) => {
   try {
-    const { page = 1, limit = 10, status, eventId } = req.query;
-    
+    const { page = 1, limit = 10, status } = req.query;
+
     let filter = {};
     if (status) filter.status = status;
-    if (eventId) filter.eventId = eventId;
 
     const applications = await Application.find(filter)
-      .populate('eventId', 'title date')
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -86,12 +84,11 @@ router.get('/', authenticate, adminOnly, async (req, res) => {
 // Bitta arizani olish (admin only yoki o'z arizasi)
 router.get('/:id', authenticate, async (req, res) => {
   try {
-    const application = await Application.findById(req.params.id)
-      .populate('eventId', 'title date location');
+    const application = await Application.findById(req.params.id);
 
     if (!application) {
-      return res.status(404).json({ 
-        message: 'Ariza topilmadi' 
+      return res.status(404).json({
+        message: 'Ariza topilmadi'
       });
     }
 
@@ -115,117 +112,88 @@ router.get('/:id', authenticate, async (req, res) => {
   }
 });
 
-// Yangi ariza yaratish (public)
+// Yangi startup ariza yaratish (public)
 router.post('/', upload.array('attachments', 5), async (req, res) => {
   try {
-    const { applicationType } = req.body;
+    const { startupName, founders, email, description, teamMembers, phone } = req.body;
 
-    let applicationData = {
-      applicationType: applicationType || 'startup',
-      phone: req.body.phone
-    };
-
-    if (applicationType === 'startup') {
-      // ===== STARTUP ARIZASI =====
-      const { startupName, founders, email, description, teamMembers, eventId } = req.body;
-
-      // Maydonlarni tekshirish
-      if (!startupName || !founders || !email || !description || !teamMembers) {
-        return res.status(400).json({ 
-          message: 'Barcha maydonlar kiritilishi shart' 
-        });
-      }
-
-      // Team members ni parse qilish
-      let parsedTeamMembers = teamMembers;
-      if (typeof teamMembers === 'string') {
-        try {
-          parsedTeamMembers = JSON.parse(teamMembers);
-        } catch (parseError) {
-          return res.status(400).json({ 
-            message: 'Jamoa a\'zolari ma\'lumotlari noto\'g\'ri formatda' 
-          });
-        }
-      }
-
-      // Founders ni parse qilish
-      let parsedFounders = founders;
-      if (typeof founders === 'string') {
-        try {
-          parsedFounders = JSON.parse(founders);
-        } catch (parseError) {
-          parsedFounders = [founders];
-        }
-      }
-
-      // EventId ni tekshirish
-      if (eventId) {
-        const event = await Event.findById(eventId);
-        if (!event) {
-          return res.status(404).json({ message: 'Tadbir topilmadi' });
-        }
-      }
-
-      // Fayllarni qo'shish
-      const attachments = [];
-      if (req.files && req.files.length > 0) {
-        req.files.forEach(file => {
-          attachments.push(`/uploads/applications/${file.filename}`);
-        });
-      }
-
-      applicationData = {
-        ...applicationData,
-        startupName,
-        founders: parsedFounders,
-        email,
-        description,
-        teamMembers: parsedTeamMembers,
-        attachments,
-        eventId: eventId || null
-      };
-
-    } else {
-      // ===== ODDIY ARIZA =====
-      const { fullName, lastName, birthDate, address, problemType, problemDescription } = req.body;
-
-      // Maydonlarni tekshirish
-      if (!fullName || !lastName || !birthDate || !address || !problemType || !problemDescription) {
-        return res.status(400).json({ 
-          message: 'Barcha maydonlar kiritilishi shart' 
-        });
-      }
-
-      applicationData = {
-        ...applicationData,
-        fullName,
-        lastName,
-        birthDate: new Date(birthDate),
-        address,
-        problemType,
-        problemDescription
-      };
+    // Maydonlarni tekshirish
+    if (!startupName || !founders || !email || !description || !teamMembers || !phone) {
+      return res.status(400).json({
+        message: 'Barcha maydonlar kiritilishi shart'
+      });
     }
+
+    // Team members ni parse qilish
+    let parsedTeamMembers = teamMembers;
+    if (typeof teamMembers === 'string') {
+      try {
+        parsedTeamMembers = JSON.parse(teamMembers);
+      } catch (parseError) {
+        return res.status(400).json({
+          message: 'Jamoa a\'zolari ma\'lumotlari noto\'g\'ri formatda'
+        });
+      }
+    }
+
+    // Founders ni parse qilish
+    let parsedFounders = founders;
+    if (typeof founders === 'string') {
+      try {
+        parsedFounders = JSON.parse(founders);
+      } catch (parseError) {
+        parsedFounders = [founders];
+      }
+    }
+
+    // Fayllarni qo'shish
+    const attachments = [];
+    if (req.files && req.files.length > 0) {
+      req.files.forEach(file => {
+        attachments.push(`/uploads/applications/${file.filename}`);
+      });
+    }
+
+    const applicationData = {
+      startupName,
+      founders: parsedFounders,
+      email,
+      description,
+      teamMembers: parsedTeamMembers,
+      attachments,
+      phone
+    };
 
     const application = new Application(applicationData);
     await application.save();
 
+    // Telegram bot orqali xabar yuborish
+    try {
+      await sendStartupApplicationToTelegram({
+        ...application.toObject(),
+        createdAt: application.createdAt
+      });
+    } catch (telegramError) {
+      console.error('Telegram xabar yuborishda xatolik:', telegramError);
+      // Telegram xatoligi uchun ariza yaratishni bekor qilmaymiz
+    }
+
     res.status(201).json({
-      message: 'Ariza muvaffaqiyatli yuborildi',
+      message: 'Startup ariza muvaffaqiyatli yuborildi',
       application
     });
 
   } catch (error) {
     console.error('Create application xatosi:', error);
-    
+
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(err => err.message);
-      return res.status(400).json({ 
-        message: 'Validatsiya xatosi', 
-        errors: messages 
+      return res.status(400).json({
+        message: 'Validatsiya xatosi',
+        errors: messages
       });
     }
-    
+
     res.status(500).json({ message: 'Server xatosi' });
   }
 });
@@ -261,7 +229,7 @@ router.patch('/:id/status', authenticate, adminOnly, async (req, res) => {
       applicationId,
       updateData,
       { new: true }
-    ).populate('eventId', 'title date');
+    );
     
     if (!application) {
       return res.status(404).json({ 
@@ -286,12 +254,11 @@ router.get('/check/:applicationNumber', async (req, res) => {
     const { applicationNumber } = req.params;
 
     const application = await Application.findOne({ applicationNumber })
-      .select('applicationNumber startupName status rejectionReason createdAt')
-      .populate('eventId', 'title');
+      .select('applicationNumber startupName status rejectionReason createdAt');
 
     if (!application) {
-      return res.status(404).json({ 
-        message: 'Ariza topilmadi. Iltimos, ariza raqamini tekshiring.' 
+      return res.status(404).json({
+        message: 'Ariza topilmadi. Iltimos, ariza raqamini tekshiring.'
       });
     }
 
@@ -302,7 +269,6 @@ router.get('/check/:applicationNumber', async (req, res) => {
         startupName: application.startupName,
         status: application.status,
         rejectionReason: application.rejectionReason,
-        eventTitle: application.eventId?.title || null,
         createdAt: application.createdAt
       }
     });
@@ -348,6 +314,7 @@ router.delete('/:id', authenticate, ownerOnly, async (req, res) => {
     res.status(500).json({ message: 'Server xatosi' });
   }
 });
+
 
 // Arizalar statistikasi (admin only)
 router.get('/stats/summary', authenticate, adminOnly, async (req, res) => {
