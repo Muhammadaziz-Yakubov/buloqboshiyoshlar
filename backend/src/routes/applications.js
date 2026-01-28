@@ -26,7 +26,7 @@ const storage = multer.diskStorage({
 const upload = multer({ 
   storage: storage,
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB
+    fileSize: 50 * 1024 * 1024 // 50MB
   },
   fileFilter: function (req, file, cb) {
     // Hujjat fayllariga ruxsat berish
@@ -185,6 +185,28 @@ router.post('/', upload.array('attachments', 5), async (req, res) => {
 
   } catch (error) {
     console.error('Create application xatosi:', error);
+
+    // Multer xatolarini alohida qayta ishlash
+    if (error instanceof multer.MulterError) {
+      if (error.code === 'LIMIT_FILE_SIZE') {
+        return res.status(413).json({
+          message: 'Fayl hajmi juda katta. Maksimal fayl hajmi: 50MB'
+        });
+      }
+      if (error.code === 'LIMIT_FILE_COUNT') {
+        return res.status(400).json({
+          message: 'Fayllar soni juda ko\'p. Maksimal 5 ta fayl yuklash mumkin'
+        });
+      }
+      if (error.code === 'LIMIT_UNEXPECTED_FILE') {
+        return res.status(400).json({
+          message: 'Noto\'g\'ri fayl maydoni nomi'
+        });
+      }
+      return res.status(400).json({
+        message: `Fayl yuklash xatosi: ${error.message}`
+      });
+    }
 
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(err => err.message);
