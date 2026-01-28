@@ -3,36 +3,16 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const Application = require('../models/Application');
 const { authenticate, adminOnly, ownerOnly } = require('../middleware/auth');
 const { sendStartupApplicationToTelegram } = require('../services/telegramBot');
 
-// Cloudinary konfiguratsiyasi
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
-
-// Cloudinary storage konfiguratsiyasi
-const cloudinaryStorage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'buloqboshi-applications',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'txt'],
-    public_id: (req, file) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      return 'app-' + uniqueSuffix + path.extname(file.originalname).substring(1);
-    }
-  }
-});
-
-// Local storage fallback (development uchun)
-const localStorage = multer.diskStorage({
+// Fayl yuklash konfiguratsiyasi - production uchun /tmp papkaga
+const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const uploadDir = 'uploads/applications/';
+    // Production da /tmp papkaga yuklash (serverless uchun)
+    const uploadDir = process.env.NODE_ENV === 'production' ? '/tmp/uploads' : 'uploads/applications/';
+    
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -43,9 +23,6 @@ const localStorage = multer.diskStorage({
     cb(null, 'app-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
-
-// Storage tanlash (production da Cloudinary, development da local)
-const storage = process.env.NODE_ENV === 'production' ? cloudinaryStorage : localStorage;
 
 const upload = multer({ 
   storage: storage,
@@ -174,11 +151,19 @@ router.post('/', upload.array('attachments', 5), async (req, res) => {
     const attachments = [];
     if (req.files && req.files.length > 0) {
       req.files.forEach(file => {
+        // Production da base64, development da file path
         if (process.env.NODE_ENV === 'production') {
-          // Cloudinary da fayl URL ini olish
-          attachments.push(file.path || file.secure_url);
+          // Faylni base64 ga o'tkazish va databasega saqlash
+          const fileData = fs.readFileSync(file.path);
+          const base64Data = fileData.toString('base64');
+          attachments.push({
+            filename: file.filename,
+            originalname: file.originalname,
+            mimetype: file.mimetype,
+            size: file.size,
+            data: base64Data
+          });
         } else {
-          // Local storage da fayl yo'lini olish
           attachments.push(`/uploads/applications/${file.filename}`);
         }
       });
@@ -331,6 +316,44 @@ router.get('/check/:applicationNumber', async (req, res) => {
   }
 });
 
+// Faylni ko'rish (base64 dan)
+router.get('/file/:id/:index', authenticate, async (req, res) => {
+  try {
+    const { id, index } = req.params;
+    const application = await Application.findById(id);
+
+    if (!application) {
+      return res.status(404).json({ message: 'Ariza topilmadi' });
+    }
+
+    const attachment = application.attachments[index];
+    if (!attachment) {
+      return res.status(404).json({ message: 'Fayl topilmadi' });
+    }
+
+    // Production da base64 faylni qaytarish
+    if (process.env.NODE_ENV === 'production' && attachment.data) {
+      const buffer = Buffer.from(attachment.data, 'base64');
+      res.set({
+        'Content-Type': attachment.mimetype,
+        'Content-Disposition': `attachment; filename="${attachment.originalname}"`
+      });
+      res.send(buffer);
+    } else {
+      // Development da faylni diskdan o'qish
+      const filePath = path.join(__dirname, '../../', attachment);
+      if (fs.existsSync(filePath)) {
+        res.sendFile(filePath);
+      } else {
+        res.status(404).json({ message: 'Fayl topilmadi' });
+      }
+    }
+  } catch (error) {
+    console.error('Get file xatosi:', error);
+    res.status(500).json({ message: 'Server xatosi' });
+  }
+});
+
 // Arizani o'chirish (owner only)
 router.delete('/:id', authenticate, ownerOnly, async (req, res) => {
   try {
@@ -346,20 +369,13 @@ router.delete('/:id', authenticate, ownerOnly, async (req, res) => {
 
     // Fayllarni o'chirish
     if (application.attachments && application.attachments.length > 0) {
-      for (const filePath of application.attachments) {
+      for (const attachment of application.attachments) {
         if (process.env.NODE_ENV === 'production') {
-          // Cloudinary dan faylni o'chirish
-          try {
-            if (filePath.includes('cloudinary.com')) {
-              const publicId = filePath.split('/').pop().split('.')[0];
-              await cloudinary.uploader.destroy(`buloqboshi-applications/${publicId}`);
-            }
-          } catch (cloudinaryError) {
-            console.error('Cloudinary fayl o\'chirish xatosi:', cloudinaryError);
-          }
+          // Production da base64 fayllar - o'chirish shart emas (database da saqlanadi)
+          continue;
         } else {
           // Local faylni o'chirish
-          const fullPath = path.join(__dirname, '../../', filePath);
+          const fullPath = path.join(__dirname, '../../', attachment);
           if (fs.existsSync(fullPath)) {
             fs.unlinkSync(fullPath);
           }
