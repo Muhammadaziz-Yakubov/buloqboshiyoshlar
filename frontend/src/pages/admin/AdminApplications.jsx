@@ -48,7 +48,7 @@ const AdminApplications = () => {
       await axios.patch(`/applications/${applicationId}/status`, data);
       fetchApplications();
       if (selectedApplication && selectedApplication._id === applicationId) {
-        setSelectedApplication({...selectedApplication, status: newStatus, rejectionReason: reason});
+        setSelectedApplication({ ...selectedApplication, status: newStatus, rejectionReason: reason });
       }
       setShowRejectModal(false);
       setRejectingAppId(null);
@@ -206,53 +206,48 @@ const AdminApplications = () => {
           <div className="flex flex-wrap gap-1.5 sm:gap-2">
             <button
               onClick={() => setFilter('all')}
-              className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
-                filter === 'all'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${filter === 'all'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
             >
               Barchasi
             </button>
             <button
               onClick={() => setFilter('pending')}
-              className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
-                filter === 'pending'
-                  ? 'bg-yellow-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${filter === 'pending'
+                ? 'bg-yellow-500 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
             >
               Kutilmoqda
             </button>
             <button
               onClick={() => setFilter('reviewing')}
-              className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
-                filter === 'reviewing'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${filter === 'reviewing'
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
             >
               <span className="hidden sm:inline">Ko'rib chiqilmoqda</span>
               <span className="sm:hidden">Ko'rilmoqda</span>
             </button>
             <button
               onClick={() => setFilter('accepted')}
-              className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
-                filter === 'accepted'
-                  ? 'bg-green-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${filter === 'accepted'
+                ? 'bg-green-500 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
             >
               <span className="hidden sm:inline">Qabul qilingan</span>
               <span className="sm:hidden">Qabul</span>
             </button>
             <button
               onClick={() => setFilter('rejected')}
-              className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
-                filter === 'rejected'
-                  ? 'bg-red-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${filter === 'rejected'
+                ? 'bg-red-500 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
             >
               <span className="hidden sm:inline">Rad etilgan</span>
               <span className="sm:hidden">Rad</span>
@@ -285,7 +280,7 @@ const AdminApplications = () => {
                 </div>
               ))}
             </div>
-            
+
             {/* Desktop Table View */}
             <table className="hidden sm:table min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -435,21 +430,20 @@ const AdminApplications = () => {
                   <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
               </button>
-              
+
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                 <button
                   key={page}
                   onClick={() => setCurrentPage(page)}
-                  className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                    currentPage === page
-                      ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                      : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                  }`}
+                  className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentPage === page
+                    ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                    }`}
                 >
                   {page}
                 </button>
               ))}
-              
+
               <button
                 onClick={() => setCurrentPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
@@ -495,21 +489,19 @@ const AdminApplications = () => {
                     </svg>
                   </button>
                 </div>
-                
+
                 {/* Status Badge */}
                 <div className="mt-3 sm:mt-4">
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold ${
-                    selectedApplication.status === 'pending' ? 'bg-amber-400/20 text-amber-100' :
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold ${selectedApplication.status === 'pending' ? 'bg-amber-400/20 text-amber-100' :
                     selectedApplication.status === 'reviewing' ? 'bg-blue-400/20 text-blue-100' :
-                    selectedApplication.status === 'accepted' ? 'bg-green-400/20 text-green-100' :
-                    'bg-red-400/20 text-red-100'
-                  }`}>
-                    <span className={`w-2 h-2 rounded-full ${
-                      selectedApplication.status === 'pending' ? 'bg-amber-300' :
+                      selectedApplication.status === 'accepted' ? 'bg-green-400/20 text-green-100' :
+                        'bg-red-400/20 text-red-100'
+                    }`}>
+                    <span className={`w-2 h-2 rounded-full ${selectedApplication.status === 'pending' ? 'bg-amber-300' :
                       selectedApplication.status === 'reviewing' ? 'bg-blue-300' :
-                      selectedApplication.status === 'accepted' ? 'bg-green-300' :
-                      'bg-red-300'
-                    }`}></span>
+                        selectedApplication.status === 'accepted' ? 'bg-green-300' :
+                          'bg-red-300'
+                      }`}></span>
                     {getStatusText(selectedApplication.status)}
                   </span>
                 </div>
@@ -615,7 +607,7 @@ const AdminApplications = () => {
                       {selectedApplication.attachments.map((file, index) => (
                         <a
                           key={index}
-                          href={`https://buloqboshi-yoshlar-agentligi.vercel.app/${file}`}
+                          href={`${axios.defaults.baseURL}/applications/file/${selectedApplication._id}/${index}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm hover:bg-blue-100 transition-colors"
@@ -623,7 +615,7 @@ const AdminApplications = () => {
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
-                          {file.split('/').pop()}
+                          {file.originalname || (typeof file === 'string' ? file.split('/').pop() : 'Fayl')}
                         </a>
                       ))}
                     </div>
@@ -702,7 +694,7 @@ const AdminApplications = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* Content */}
             <div className="p-4 sm:p-6">
               <textarea
@@ -713,7 +705,7 @@ const AdminApplications = () => {
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all resize-none"
               />
             </div>
-            
+
             {/* Footer */}
             <div className="border-t border-gray-100 px-4 sm:px-6 py-4 bg-gray-50">
               <div className="flex gap-3">

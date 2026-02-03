@@ -12,7 +12,7 @@ const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     // Production da /tmp papkaga yuklash (serverless uchun)
     const uploadDir = process.env.NODE_ENV === 'production' ? '/tmp/uploads' : 'uploads/applications/';
-    
+
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -24,7 +24,7 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ 
+const upload = multer({
   storage: storage,
   limits: {
     fileSize: 50 * 1024 * 1024 // 50MB
@@ -97,8 +97,8 @@ router.get('/:id', authenticate, async (req, res) => {
     if (req.user.role !== 'admin' && req.user.role !== 'owner') {
       // Oddiy user o'z arizasini ko'ra oladi (agar kerak bo'lsa)
       // Bu yerda qo'shimcha tekshirish qo'shish mumkin
-      return res.status(403).json({ 
-        message: 'Sizda bu arizani ko\'rish uchun ruxsat yo\'q' 
+      return res.status(403).json({
+        message: 'Sizda bu arizani ko\'rish uchun ruxsat yo\'q'
       });
     }
 
@@ -231,7 +231,7 @@ router.post('/', upload.array('attachments', 5), async (req, res) => {
       });
     }
 
-    res.status(500).json({ message: 'Server xatosi' });
+    res.status(500).json({ message: 'Server xatosi', error: error.message });
   }
 });
 
@@ -243,15 +243,15 @@ router.patch('/:id/status', authenticate, adminOnly, async (req, res) => {
 
     const validStatuses = ['pending', 'reviewing', 'accepted', 'rejected'];
     if (!validStatuses.includes(status)) {
-      return res.status(400).json({ 
-        message: 'Noto\'g\'ri status' 
+      return res.status(400).json({
+        message: 'Noto\'g\'ri status'
       });
     }
 
     // Rad etish uchun sabab kerak
     if (status === 'rejected' && !rejectionReason) {
-      return res.status(400).json({ 
-        message: 'Rad etish uchun sabab kiritilishi shart' 
+      return res.status(400).json({
+        message: 'Rad etish uchun sabab kiritilishi shart'
       });
     }
 
@@ -267,10 +267,10 @@ router.patch('/:id/status', authenticate, adminOnly, async (req, res) => {
       updateData,
       { new: true }
     );
-    
+
     if (!application) {
-      return res.status(404).json({ 
-        message: 'Ariza topilmadi' 
+      return res.status(404).json({
+        message: 'Ariza topilmadi'
       });
     }
 
@@ -332,15 +332,15 @@ router.get('/file/:id/:index', authenticate, async (req, res) => {
     }
 
     // Production da base64 faylni qaytarish
-    if (process.env.NODE_ENV === 'production' && attachment.data) {
+    if (attachment && attachment.data) {
       const buffer = Buffer.from(attachment.data, 'base64');
       res.set({
-        'Content-Type': attachment.mimetype,
-        'Content-Disposition': `attachment; filename="${attachment.originalname}"`
+        'Content-Type': attachment.mimetype || 'application/octet-stream',
+        'Content-Disposition': `inline; filename="${attachment.originalname || 'file'}"`
       });
       res.send(buffer);
-    } else {
-      // Development da faylni diskdan o'qish
+    } else if (typeof attachment === 'string') {
+      // Development da yoki eski formatda faylni diskdan o'qish
       const filePath = path.join(__dirname, '../../', attachment);
       if (fs.existsSync(filePath)) {
         res.sendFile(filePath);
@@ -360,10 +360,10 @@ router.delete('/:id', authenticate, ownerOnly, async (req, res) => {
     const applicationId = req.params.id;
 
     const application = await Application.findById(applicationId);
-    
+
     if (!application) {
-      return res.status(404).json({ 
-        message: 'Ariza topilmadi' 
+      return res.status(404).json({
+        message: 'Ariza topilmadi'
       });
     }
 

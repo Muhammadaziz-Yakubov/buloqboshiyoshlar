@@ -84,14 +84,29 @@ ${foundersList}
     let messageId;
 
     // Agar attachmentlar bo'lsa, birinchi rasmni yuborish
-    const imageAttachments = applicationData.attachments.filter(att => att.match(/\.(jpg|jpeg|png|gif)$/i));
-    if (imageAttachments.length > 0) {
-      const imagePath = path.join(__dirname, '../../uploads/applications', imageAttachments[0]);
+    const imageAttachments = applicationData.attachments.filter(att => {
+      const filename = typeof att === 'string' ? att : (att.filename || att.originalname || '');
+      return filename.match(/\.(jpg|jpeg|png|gif)$/i);
+    });
 
-      if (fs.existsSync(imagePath)) {
+    if (imageAttachments.length > 0) {
+      const firstAtt = imageAttachments[0];
+      let imageSource;
+
+      if (typeof firstAtt === 'string') {
+        const imagePath = path.join(__dirname, '../../uploads/applications', firstAtt);
+        if (fs.existsSync(imagePath)) {
+          imageSource = fs.createReadStream(imagePath);
+        }
+      } else if (firstAtt.data) {
+        // Base64 dan buffer yaratish
+        imageSource = Buffer.from(firstAtt.data, 'base64');
+      }
+
+      if (imageSource) {
         const sentMessage = await telegramBot.sendPhoto(
           TELEGRAM_GROUP_ID,
-          fs.createReadStream(imagePath),
+          imageSource,
           {
             caption: messageText,
             ...messageOptions

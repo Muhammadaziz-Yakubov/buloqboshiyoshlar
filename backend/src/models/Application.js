@@ -62,7 +62,7 @@ const ApplicationSchema = new mongoose.Schema({
     default: []
   },
   attachments: {
-    type: [String],
+    type: [mongoose.Schema.Types.Mixed],
     default: []
   },
   phone: {
