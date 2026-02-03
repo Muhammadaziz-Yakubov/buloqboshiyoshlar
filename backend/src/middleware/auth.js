@@ -12,21 +12,26 @@ const generateToken = (userId) => {
 // Authentication middleware
 const authenticate = async (req, res, next) => {
   try {
-    // Headerdan token olish
+    // Headerdan yoki query parametrdan token olish
+    let token;
     const authHeader = req.header('Authorization');
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    } else if (req.query.token) {
+      token = req.query.token;
+    }
+
+    if (!token) {
       return res.status(401).json({ message: 'Token kiritilmagan' });
     }
 
-    const token = authHeader.substring(7); // 'Bearer ' ni olib tashlash
-
     // Tokenni tekshirish
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
-    
+
     // Userni topish
     const user = await User.findById(decoded.userId).select('+password');
-    
+
     if (!user) {
       return res.status(401).json({ message: 'User topilmadi' });
     }
@@ -37,15 +42,15 @@ const authenticate = async (req, res, next) => {
 
   } catch (error) {
     console.error('Authentication error:', error);
-    
+
     if (error instanceof jwt.JsonWebTokenError) {
       return res.status(401).json({ message: 'Noto\'g\'ri token' });
     }
-    
+
     if (error instanceof jwt.TokenExpiredError) {
       return res.status(401).json({ message: 'Token muddati o\'tgan' });
     }
-    
+
     res.status(500).json({ message: 'Server xatosi' });
   }
 };
@@ -58,8 +63,8 @@ const authorize = (...roles) => {
     }
 
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ 
-        message: 'Sizda bu amalni bajarish uchun ruxsat yo\'q' 
+      return res.status(403).json({
+        message: 'Sizda bu amalni bajarish uchun ruxsat yo\'q'
       });
     }
 
