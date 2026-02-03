@@ -151,8 +151,10 @@ router.post('/', upload.array('attachments', 5), async (req, res) => {
     const attachments = [];
     if (req.files && req.files.length > 0) {
       req.files.forEach(file => {
-        // Production da base64, development da file path
-        if (process.env.NODE_ENV === 'production') {
+        // Cloud platformlarda (Vercel, Render) yoki production da base64 dan foydalanamiz
+        const isCloudProvider = process.env.VERCEL || process.env.RENDER || process.env.NODE_ENV === 'production';
+
+        if (isCloudProvider) {
           // Faylni base64 ga o'tkazish va databasega saqlash
           const fileData = fs.readFileSync(file.path);
           const base64Data = fileData.toString('base64');
@@ -328,11 +330,14 @@ router.get('/file/:id/:index', authenticate, async (req, res) => {
 
     const attachment = application.attachments[index];
     if (!attachment) {
-      return res.status(404).json({ message: 'Fayl topilmadi' });
+      return res.status(404).json({
+        message: 'Fayl topilmadi',
+        debug: { attachmentsCount: application.attachments.length, requestedIndex: index }
+      });
     }
 
     // Production da base64 faylni qaytarish
-    if (attachment && attachment.data) {
+    if (attachment && typeof attachment === 'object' && attachment.data) {
       const buffer = Buffer.from(attachment.data, 'base64');
       res.set({
         'Content-Type': attachment.mimetype || 'application/octet-stream',
@@ -341,12 +346,30 @@ router.get('/file/:id/:index', authenticate, async (req, res) => {
       res.send(buffer);
     } else if (typeof attachment === 'string') {
       // Development da yoki eski formatda faylni diskdan o'qish
+      // Agar bu string bo'lsa va ichida "[object Object]" bo'lsa, bu schema xatosi bo'lgan
+      if (attachment.includes('[object Object]')) {
+        return res.status(400).json({
+          message: 'Fayl ma\'lumotlari buzilgan (baza xatosi)',
+          detail: 'Bu ariza schema o\'zgarishidan oldin yuborilgan. Qayta yuborishni so\'rang.'
+        });
+      }
+
       const filePath = path.join(__dirname, '../../', attachment);
       if (fs.existsSync(filePath)) {
         res.sendFile(filePath);
       } else {
-        res.status(404).json({ message: 'Fayl topilmadi' });
+        res.status(404).json({
+          message: 'Fayl topilmadi (diskda mavjud emas)',
+          path: attachment,
+          env: process.env.NODE_ENV
+        });
       }
+    } else {
+      res.status(400).json({
+        message: 'Fayl formati noma\'lum',
+        type: typeof attachment,
+        content: JSON.stringify(attachment).substring(0, 100)
+      });
     }
   } catch (error) {
     console.error('Get file xatosi:', error);
